@@ -1,0 +1,13 @@
+# Kotak Neo API Credentials Template
+# Copy this file to b.txt and fill in your actual credentials
+# DO NOT commit b.txt to version control
+
+KOTAK_CONSUMER_KEY = "your-consumer-key-here"
+KOTAK_MOBILE_NUMBER = "your-10-digit-mobile-number"
+KOTAK_PASSWORD = "your-password"
+KOTAK_MPIN = "your-mpin"
+KOTAK_UCC = "your-ucc"
+KOTAK_TOTP_SECRET = "your-totp-secret"
+KOTAK_NEO_FIN_KEY = "neotradeapi"
+DRY_RUN = true
+
