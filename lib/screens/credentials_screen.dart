@@ -3,7 +3,9 @@ import '../models/credentials.dart';
 import '../services/credentials_service.dart';
 
 class CredentialsScreen extends StatefulWidget {
-  const CredentialsScreen({super.key});
+  const CredentialsScreen({super.key, this.onCredentialsSaved});
+
+  final VoidCallback? onCredentialsSaved;
 
   @override
   State<CredentialsScreen> createState() => _CredentialsScreenState();
@@ -76,7 +78,10 @@ class _CredentialsScreenState extends State<CredentialsScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pop(true);
+        widget.onCredentialsSaved?.call();
+        if (Navigator.canPop(context)) {
+          Navigator.of(context).pop(true);
+        }
       }
     } catch (e) {
       if (mounted) {

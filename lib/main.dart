@@ -91,7 +91,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (!_hasCredentials) {
-      return const CredentialsScreen();
+      return CredentialsScreen(
+        onCredentialsSaved: () {
+          setState(() {
+            _hasCredentials = true;
+          });
+        },
+      );
     }
 
     return const OrderPlacementScreen();
