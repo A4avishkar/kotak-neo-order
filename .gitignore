@@ -46,9 +46,35 @@ app.*.map.json
 
 # Sensitive credentials - DO NOT COMMIT
 b.txt
+python_scripts/b.txt
+*.txt.example
 
 # Android local properties (may contain sensitive paths)
 android/local.properties
+
+# Build outputs
+build/
+*.apk
+*.aab
+*.ipa
+*.app
+
+# Output files from Python scripts
+outputs/
+*.csv
+
+# Scrip master files (can be regenerated)
+scrip_masters/
+
+# Temporary/unwanted files
+*.pdf
+*.jpg
+*.jpeg
+*.png
+!assets/**/*.png
+!assets/**/*.jpg
+!android/app/src/main/res/**/*.png
+!ios/Runner/Assets.xcassets/**/*.png
 
 # Python
 __pycache__/

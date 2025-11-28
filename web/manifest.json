@@ -1,11 +1,11 @@
 {
-    "name": "kotak_neo_order",
-    "short_name": "kotak_neo_order",
+    "name": "QuantKey",
+    "short_name": "QuantKey",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0F172A",
+    "theme_color": "#1E3A8A",
+    "description": "QuantKey - Kotak Neo Trading App",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

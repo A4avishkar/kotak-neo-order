@@ -2,7 +2,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/credentials.dart';
 
 class CredentialsService {
-  static const String _keyCredentials = 'kotak_credentials';
   static const String _keyConsumerKey = 'consumer_key';
   static const String _keyMobileNumber = 'mobile_number';
   static const String _keyMpin = 'mpin';

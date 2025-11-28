@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.kotak_neo_order"
+    namespace = "com.avishkar.quantkey"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,8 +20,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.kotak_neo_order"
+        // Unique Application ID for Play Store
+        applicationId = "com.avishkar.quantkey"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -32,9 +32,16 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Note: For Play Store release, you need to create a signing config
+            // See: https://developer.android.com/studio/publish/app-signing
+            // For now, using debug keys. Replace with your release signing config before publishing.
             signingConfig = signingConfigs.getByName("debug")
+            // Temporarily disabled minification to fix R8 errors with Play Core
+            // Re-enable after adding proper ProGuard rules if needed
+            isMinifyEnabled = false
+            // Resource shrinking requires minification to be enabled
+            isShrinkResources = false
+            // proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }

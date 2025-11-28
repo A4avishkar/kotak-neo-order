@@ -1,9 +1,39 @@
 import 'package:flutter/material.dart';
-import 'screens/order_placement_screen.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/credentials_screen.dart';
 import 'services/credentials_service.dart';
+import 'services/background_download_service.dart';
+import 'services/market_data_service.dart';
+import 'screens/dashboard_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize WebSocket setting from SharedPreferences
+  await MarketDataService.initializeWebsocketSetting();
+  
+  // Initialize background download service
+  await BackgroundDownloadService.initialize();
+  
+  // Auto-start service if it was enabled before (survives app restarts and reboots)
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final wasEnabled = prefs.getBool('background_service_enabled') ?? false;
+    if (wasEnabled) {
+      await BackgroundDownloadService.startService();
+    }
+  } catch (e) {
+    debugPrint('Error auto-starting background service: $e');
+  }
+  
+  // Set preferred orientations (optional)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  
   runApp(const MyApp());
 }
 
@@ -12,40 +42,53 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme scheme = ColorScheme.fromSeed(
+      seedColor: Colors.blueGrey.shade900,
+      brightness: Brightness.dark,
+    );
+
     return MaterialApp(
-      title: 'Kotak Neo Order',
+      title: 'QuantKey',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue.shade700,
-          brightness: Brightness.light,
-        ),
+        colorScheme: scheme,
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
         useMaterial3: true,
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.blue.shade700,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF0B1120),
           foregroundColor: Colors.white,
-          elevation: 2,
+          elevation: 0,
         ),
         cardTheme: CardThemeData(
-          elevation: 2,
+          color: const Color(0xFF1E293B),
+          elevation: 4,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          filled: true,
-          fillColor: Colors.grey.shade50,
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Color(0xFF0B1120),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white70,
+          type: BottomNavigationBarType.fixed,
+          showUnselectedLabels: true,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            elevation: 2,
+            backgroundColor: const Color(0xFF1E3A8A),
+            foregroundColor: Colors.white,
+            elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
             ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFF1E293B),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -83,9 +126,46 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isChecking) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
+      // Splash screen with full logo
+      return Scaffold(
+        backgroundColor: const Color(0xFF0F172A),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 40),
+                  // Full Logo Image - Display complete image without cutting
+                  Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(
+                      maxWidth: 350,
+                      maxHeight: 400,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                    child: Image.asset(
+                      'assets/images/Gemini_Generated_Image_blgl61blgl61blgl.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Fallback to regular logo if the image doesn't exist
+                        return Image.asset(
+                          'assets/images/logo.png',
+                          fit: BoxFit.contain,
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  // Loading indicator
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E3A8A)),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -100,6 +180,6 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    return const OrderPlacementScreen();
+    return const DashboardScreen();
   }
 }
