@@ -1,0 +1,21 @@
+venv/
+.env
+__pycache__/
+*.log
+*.pyc
+
+# Local runtime credentials / secrets
+b.txt
+*.pem
+*.key
+*service-account*.json
+
+# Local data outputs (generated)
+outputs/
+scrip_masters/
+download_log.txt
+*.csv
+*.bak_step*
+
+# User store (local)
+data/kotak_users/*.json
