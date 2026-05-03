@@ -1,0 +1,5 @@
+@reboot cd /home/ubuntu/kotakserver/kotak && nohup ./venv/bin/python3 unified_server.py --host 0.0.0.0 --port 8000 >> /home/ubuntu/kotakserver/kotak/unified_server.log 2>&1 &
+30 02 * * 1-5 /home/ubuntu/kotakserver/kotak/venv/bin/python3 /home/ubuntu/kotakserver/kotak/download_scrip_master.py >> /home/ubuntu/kotakserver/kotak/download_log.txt 2>&1
+05 03 * * 1-5 /home/ubuntu/kotakserver/kotak/venv/bin/python3 /home/ubuntu/kotakserver/kotak/process_expiry_data.py >> /home/ubuntu/kotakserver/kotak/cron_process.log 2>&1
+45 3 * * 1-5 /home/ubuntu/kotakserver/kotak/start_oi_analyzers.sh >> /home/ubuntu/kotakserver/kotak/oi_analyzers_start.log 2>&1
+05 10 * * 1-5 pkill -f nifty_oi_analyzer.py >> /home/ubuntu/kotakserver/kotak/oi_analyzers_start.log 2>&1

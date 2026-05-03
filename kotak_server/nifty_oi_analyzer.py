@@ -76,8 +76,11 @@ except ImportError:
     except:
         HAS_OS_SYSTEM = False
 
-# Suppress SSL warnings (Kotak URLs often use self-signed / corporate certs)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# SSL verification policy (secure by default).
+# Set KOTAK_INSECURE_SSL=true only when debugging broken certificate chains.
+ALLOW_INSECURE_SSL = str(os.getenv("KOTAK_INSECURE_SSL", "false")).strip().lower() in ("1", "true", "yes")
+if ALLOW_INSECURE_SSL:
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # IST helpers: server runs in UTC; force Indian Standard Time for Redis timestamps.
 _IST = timezone(timedelta(hours=5, minutes=30))
@@ -1008,7 +1011,7 @@ class KotakSession:
         body = {"mobileNumber": mobile, "ucc": self.ucc, "totp": totp_code}
 
         try:
-            resp = requests.post(url, headers=headers, json=body, verify=False, timeout=20)
+            resp = requests.post(url, headers=headers, json=body, verify=not ALLOW_INSECURE_SSL, timeout=20)
         except Exception as e:
             print(f"❌ TOTP login error: {e}")
             return False
@@ -1039,7 +1042,7 @@ class KotakSession:
         }
         body = {"mpin": self.mpin}
         try:
-            resp = requests.post(url, headers=headers, json=body, verify=False, timeout=20)
+            resp = requests.post(url, headers=headers, json=body, verify=not ALLOW_INSECURE_SSL, timeout=20)
         except Exception as e:
             print(f"❌ MPIN validate error: {e}")
             return False
@@ -1082,7 +1085,7 @@ class KotakSession:
         body = {"grant_type": "client_credentials"}
 
         try:
-            resp = requests.post(url, headers=headers, json=body, verify=False, timeout=20)
+            resp = requests.post(url, headers=headers, json=body, verify=not ALLOW_INSECURE_SSL, timeout=20)
             if resp.status_code == 200:
                 data = resp.json()
                 self.bearer_token = data.get("access_token")
@@ -2896,8 +2899,7 @@ def start_api_server(api_host: str, api_port: int, shared_state: Dict):
             index_spot_value = snapshot.get("spot")
         
         # Log for debugging
-        import datetime
-        now = datetime.now_ist().strftime("%H:%M:%S")
+        now = now_ist().strftime("%H:%M:%S")
         print(f"[{now}] API /state called - Spot: {index_spot_value}, Snapshot keys: {list(snapshot.keys())}")
         
         return {
@@ -3090,6 +3092,8 @@ def analyze_continuous(
     # Merge all batch quotes into shared state
     def merge_quotes_to_shared():
         """Merge quotes from all batches into shared_quotes with OI carry-forward logic."""
+        nonlocal last_data_update
+        saw_update = False
         for batch_dict in batch_quotes_dicts:
             for token, quote_data in batch_dict.items():
                 if not token or not isinstance(quote_data, dict):
@@ -3151,6 +3155,9 @@ def analyze_continuous(
                 
                 # Store last quote for reference
                 shared_quotes[token]["last_quote"] = quote_data
+                saw_update = True
+        if saw_update:
+            last_data_update = time.time()
     
     # Continuous update loop
     last_oi_calc = time.time()
