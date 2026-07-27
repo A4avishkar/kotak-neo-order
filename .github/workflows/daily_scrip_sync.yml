@@ -1,0 +1,63 @@
+name: Daily Scrip Master Sync
+
+on:
+  # Run every day at 8:00 AM IST (2:30 AM UTC) - after Kotak updates their scrip master
+  schedule:
+    - cron: '30 2 * * *'
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  sync-scrip-master:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests pyotp urllib3
+
+      - name: Create credentials file (b.txt)
+        run: |
+          cat > python_scripts/b.txt << 'EOF'
+          consumer_key=${{ secrets.KOTAK_CONSUMER_KEY }}
+          consumer_secret=${{ secrets.KOTAK_CONSUMER_SECRET }}
+          access_token=${{ secrets.KOTAK_ACCESS_TOKEN }}
+          view_token=${{ secrets.KOTAK_VIEW_TOKEN }}
+          sid=${{ secrets.KOTAK_SID }}
+          server_id=${{ secrets.KOTAK_SERVER_ID }}
+          mobile_number=${{ secrets.KOTAK_MOBILE }}
+          password=${{ secrets.KOTAK_PASSWORD }}
+          mpin=${{ secrets.KOTAK_MPIN }}
+          totp_secret=${{ secrets.KOTAK_TOTP_SECRET }}
+          EOF
+
+      - name: Download Scrip Master CSVs from Kotak
+        run: |
+          mkdir -p scrip_masters
+          cd python_scripts
+          python download_scrip_master.py
+        env:
+          PYTHONUNBUFFERED: '1'
+
+      - name: Upload to Supabase
+        run: |
+          cd python_scripts
+          python upload_to_supabase.py
+        env:
+          PYTHONUNBUFFERED: '1'
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Sync complete
+        run: |
+          echo "✅ Scrip Master sync completed at $(date)"
+          echo "Supabase has been updated with today's latest F&O scrip data."
