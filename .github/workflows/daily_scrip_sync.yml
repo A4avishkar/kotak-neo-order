@@ -1,9 +1,9 @@
 name: Daily Scrip Master Sync
 
 on:
-  # Run daily at 15:00 IST (9:30 AM UTC) - for testing
+  # Run every day at 8:00 AM IST (2:30 AM UTC) - after Kotak updates their scrip master
   schedule:
-    - cron: '30 9 * * *'
+    - cron: '30 2 * * *'
   # Allow manual trigger from GitHub Actions tab
   workflow_dispatch:
 

@@ -47,7 +47,13 @@ app.*.map.json
 # Sensitive credentials - DO NOT COMMIT
 b.txt
 python_scripts/b.txt
+mission.txt
+python_scripts/mission.txt
+k.txt
 *.txt.example
+firebase-service-account.json
+google-services*.json
+*.json.secret
 
 # Android local properties (may contain sensitive paths)
 android/local.properties
