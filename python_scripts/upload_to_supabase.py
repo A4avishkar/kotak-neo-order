@@ -3,9 +3,14 @@ import glob
 import csv
 import requests
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://lztwmrthpdkeeguedvqh.supabase.co")
-# Service key is needed for DELETE+INSERT operations (anon key is read-only for destructive ops)
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_ANON_KEY", "sb_publishable_mSbAij70Af_IiloKZPnIgg_pm5Dkz8w")
+raw_url = os.environ.get("SUPABASE_URL", "").strip().strip('"').strip("'")
+if not raw_url or not raw_url.startswith("http"):
+    SUPABASE_URL = "https://lztwmrthpdkeeguedvqh.supabase.co"
+else:
+    SUPABASE_URL = raw_url.rstrip("/")
+
+raw_key = (os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_ANON_KEY", "")).strip().strip('"').strip("'")
+SUPABASE_KEY = raw_key if raw_key else "sb_publishable_mSbAij70Af_IiloKZPnIgg_pm5Dkz8w"
 
 def normalize_header(header):
     return header.strip().replace(';', '').lower()
