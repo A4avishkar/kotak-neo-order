@@ -7,6 +7,9 @@ on:
   # Allow manual trigger from GitHub Actions tab
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   sync-scrip-master:
     runs-on: ubuntu-latest
@@ -33,11 +36,17 @@ jobs:
           access_token=${{ secrets.KOTAK_ACCESS_TOKEN }}
           view_token=${{ secrets.KOTAK_VIEW_TOKEN }}
           sid=${{ secrets.KOTAK_SID }}
+          ucc=${{ secrets.KOTAK_UCC || secrets.KOTAK_SID }}
           server_id=${{ secrets.KOTAK_SERVER_ID }}
-          mobile_number=${{ secrets.KOTAK_MOBILE }}
+          mobile_number=${{ secrets.KOTAK_MOBILE_NUMBER || secrets.KOTAK_MOBILE }}
           password=${{ secrets.KOTAK_PASSWORD }}
           mpin=${{ secrets.KOTAK_MPIN }}
           totp_secret=${{ secrets.KOTAK_TOTP_SECRET }}
+          KOTAK_CONSUMER_KEY=${{ secrets.KOTAK_CONSUMER_KEY }}
+          KOTAK_MOBILE_NUMBER=${{ secrets.KOTAK_MOBILE_NUMBER || secrets.KOTAK_MOBILE }}
+          KOTAK_UCC=${{ secrets.KOTAK_UCC || secrets.KOTAK_SID }}
+          KOTAK_MPIN=${{ secrets.KOTAK_MPIN }}
+          KOTAK_TOTP_SECRET=${{ secrets.KOTAK_TOTP_SECRET }}
           EOF
 
       - name: Download Scrip Master CSVs from Kotak
@@ -57,7 +66,19 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
+      - name: Commit and push updated scrip master files to GitHub
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add scrip_masters/
+          if git diff --staged --quiet; then
+            echo "No changes in scrip_master files to commit."
+          else
+            git commit -m "chore: auto-update daily scrip master files [skip ci]"
+            git push
+          fi
+
       - name: Sync complete
         run: |
           echo "✅ Scrip Master sync completed at $(date)"
-          echo "Supabase has been updated with today's latest F&O scrip data."
+          echo "Supabase and GitHub repo have been updated with today's latest F&O scrip data."

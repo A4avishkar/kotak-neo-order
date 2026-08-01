@@ -84,11 +84,11 @@ def login_and_get_session(creds):
     print("Step 1: Login & Get Session")
     print("=" * 60)
     
-    consumer_key = creds.get('KOTAK_CONSUMER_KEY')
-    mobile_number = creds.get('KOTAK_MOBILE_NUMBER')
-    mpin = creds.get('KOTAK_MPIN')
-    ucc = creds.get('KOTAK_UCC')
-    totp_secret = creds.get('KOTAK_TOTP_SECRET')
+    consumer_key = creds.get('KOTAK_CONSUMER_KEY') or creds.get('consumer_key')
+    mobile_number = creds.get('KOTAK_MOBILE_NUMBER') or creds.get('mobile_number') or creds.get('mobile')
+    mpin = creds.get('KOTAK_MPIN') or creds.get('mpin')
+    ucc = creds.get('KOTAK_UCC') or creds.get('ucc') or creds.get('sid')
+    totp_secret = creds.get('KOTAK_TOTP_SECRET') or creds.get('totp_secret')
     
     if not all([consumer_key, mobile_number, mpin, ucc]):
         print("❌ Missing required credentials in b.txt")
@@ -494,6 +494,21 @@ def download_fno_scrip_master(base_dir="scrip_masters"):
             print("\nFailed downloads:")
             for url, reason in failure:
                 print(f"   • {os.path.basename(url)}: {reason}")
+
+        # Step 4: Automatically upload to Supabase
+        print("\n" + "=" * 80)
+        print("Step 4: Syncing with Supabase Database")
+        print("=" * 80)
+        try:
+            import sys
+            current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
+            if current_dir not in sys.path:
+                sys.path.append(current_dir)
+            import upload_to_supabase
+            # Ensure base_dir from download matches the upload script's base directory
+            upload_to_supabase.main()
+        except Exception as upload_err:
+            print(f"⚠️ Could not trigger Supabase upload: {upload_err}")
         
     except Exception as e:
         print(f"❌ Error: {e}")

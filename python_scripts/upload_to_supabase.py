@@ -127,6 +127,7 @@ def upload_segment_file(filepath):
         # 2. Bulk insert new records in batches
         insert_url = f"{SUPABASE_URL}/rest/v1/scrip_master"
         headers["Content-Type"] = "application/json"
+        headers["Prefer"] = "return=minimal"
         
         batch_size = 2000
         total_inserted = 0
