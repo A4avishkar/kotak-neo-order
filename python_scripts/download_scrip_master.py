@@ -330,12 +330,12 @@ def download_fno_scrip_master(base_dir="scrip_masters"):
         session_info = login_and_get_session(creds)
         if not session_info:
             print("❌ Failed to login")
-            return
+            raise RuntimeError("Failed to login to Kotak API")
         
         # Get scrip master URLs
-        ucc = creds.get('KOTAK_UCC')
-        consumer_key = creds.get('KOTAK_CONSUMER_KEY')
-        consumer_secret = creds.get('KOTAK_CONSUMER_SECRET')  # May be None
+        ucc = creds.get('KOTAK_UCC') or creds.get('ucc') or creds.get('sid')
+        consumer_key = creds.get('KOTAK_CONSUMER_KEY') or creds.get('consumer_key')
+        consumer_secret = creds.get('KOTAK_CONSUMER_SECRET') or creds.get('consumer_secret')
         file_urls = get_scrip_master_urls(
             session_info["session_token"], 
             session_info["base_url"], 
@@ -346,7 +346,7 @@ def download_fno_scrip_master(base_dir="scrip_masters"):
         )
         if not file_urls:
             print("❌ Failed to get scrip master URLs")
-            return
+            raise RuntimeError("Failed to get scrip master URLs from Kotak API")
         
         # Segment mapping for display names
         segment_names = {
