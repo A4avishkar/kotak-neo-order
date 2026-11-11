@@ -495,25 +495,34 @@ def download_fno_scrip_master(base_dir="scrip_masters"):
             for url, reason in failure:
                 print(f"   • {os.path.basename(url)}: {reason}")
 
-        # Step 4: Automatically upload to Supabase
-        print("\n" + "=" * 80)
-        print("Step 4: Syncing with Supabase Database")
-        print("=" * 80)
-        try:
-            import sys
-            current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
-            if current_dir not in sys.path:
-                sys.path.append(current_dir)
-            import upload_to_supabase
-            # Ensure base_dir from download matches the upload script's base directory
-            upload_to_supabase.main()
-        except Exception as upload_err:
-            print(f"⚠️ Could not trigger Supabase upload: {upload_err}")
+        if success_count == 0:
+            raise RuntimeError("All scrip master downloads failed.")
+
+        # In GitHub Actions, the dedicated 'Upload to Supabase' step handles upload with SUPABASE_SERVICE_KEY.
+        # Skip duplicate internal upload here unless SUPABASE_SERVICE_KEY is explicitly supplied.
+        if os.environ.get("GITHUB_ACTIONS") == "true" and not os.environ.get("SUPABASE_SERVICE_KEY"):
+            print("\nℹ️  Skipping inline Supabase upload in download step (handled by dedicated workflow step).")
+        else:
+            # Step 4: Automatically upload to Supabase
+            print("\n" + "=" * 80)
+            print("Step 4: Syncing with Supabase Database")
+            print("=" * 80)
+            try:
+                import sys
+                current_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
+                if current_dir not in sys.path:
+                    sys.path.append(current_dir)
+                import upload_to_supabase
+                # Ensure base_dir from download matches the upload script's base directory
+                upload_to_supabase.main()
+            except Exception as upload_err:
+                print(f"⚠️ Could not trigger Supabase upload: {upload_err}")
         
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
+        raise
 
 
 def main():
